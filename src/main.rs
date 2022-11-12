@@ -1,32 +1,16 @@
-use std::{thread, time};
-
-use tokio::time::{sleep, Duration};
-
-fn slow_function() -> String {
-    thread::sleep(time::Duration::from_secs(10));
-
-    "Finally done".to_string()
-}
-
-async fn other_call(num: i32) {
-    sleep(Duration::from_secs(1)).await;
-    println!("Other Call {}", num);
+async fn add(num_1: i32, num_2: i32) -> i32 {
+    num_1 + num_2
 }
 
 #[tokio::main]
-async fn main() {
-    let sync_code = tokio::task::spawn_blocking(slow_function);
+async fn main() {}
 
-    let mut tasks = vec![];
-    for num in 0..10 {
-        let task = tokio::spawn(other_call(num));
-        tasks.push(task);
+#[cfg(test)]
+mod tests {
+    use super::add;
+
+    #[tokio::test]
+    async fn test_add() {
+        assert_eq!(add(1, 1).await, 2);
     }
-
-    for task in tasks {
-        task.await.unwrap();
-    }
-    let result = sync_code.await.unwrap();
-
-    println!("{}", result);
 }
