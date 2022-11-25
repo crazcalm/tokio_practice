@@ -19,7 +19,6 @@ async fn grab_package(package_delivered: Arc<Notify>) {
     println!("Look outside house for package");
     sleep(Duration::from_secs(2)).await;
     println!("Grab package");
-    sleep(Duration::from_secs(2)).await;
 }
 
 #[tokio::main]
@@ -32,6 +31,4 @@ async fn main() {
 
     order_package_handle.await.unwrap();
     grab_package_handle.await.unwrap();
-
-    println!("Another happy customer!");
 }
