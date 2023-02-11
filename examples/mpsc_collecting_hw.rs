@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use tokio::sync::mpsc;
 
-async fn student(id: i32, tx: Arc<mpsc::Sender<String>>) {
+async fn student(id: i32, tx: mpsc::Sender<String>) {
     println!("{}", format!("Student {id} is getting their hw"));
     tx.send(format!("Student {id}'s homework")).await.unwrap();
 }
@@ -22,13 +20,13 @@ async fn teacher(mut rx: mpsc::Receiver<String>) -> Vec<String> {
 async fn main() {
     let (tx, rx) = mpsc::channel(100);
 
-    let tx_arc = Arc::new(tx);
+    //let tx_arc = Arc::new(tx);
 
     let teacher_handle = tokio::spawn(teacher(rx));
 
     let mut student_handles = Vec::new();
     for student_id in 0..=10 {
-        student_handles.push(tokio::spawn(student(student_id, tx_arc.clone())));
+        student_handles.push(tokio::spawn(student(student_id, tx.clone())));
     }
 
     for handle in student_handles {
@@ -36,7 +34,7 @@ async fn main() {
     }
 
     // droping the last receiver from memory
-    drop(tx_arc);
+    drop(tx);
 
     let homework = teacher_handle.await.unwrap();
 

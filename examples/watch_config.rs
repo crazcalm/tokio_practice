@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use tokio::sync::watch;
 
 #[derive(Debug, Clone)]
@@ -17,29 +15,29 @@ impl Config {
     }
 }
 
-async fn listens_for_changes(rx: Arc<watch::Receiver<Config>>) {
-    loop {
-        if rx.has_changed().unwrap() {
-            break;
-        }
-    }
+async fn listens_for_changes( mut rx: watch::Receiver<Config>) {
+    while rx.changed().await.is_ok(){
     let new_config = rx.borrow().clone();
 
     print!("\n\nNew config is {:#?}", new_config);
+    }
 }
 
 #[tokio::main]
 async fn main() {
     let mut config = Config::new("db_path".to_string());
 
-    let (tx, rx) = watch::channel(config.clone());
-    let rx_arc = Arc::new(rx);
+    let (tx, rx_1) = watch::channel(config.clone());
+    let rx_2 = tx.subscribe();
 
-    let handle_1 = tokio::spawn(listens_for_changes(rx_arc.clone()));
-    let handle_2 = tokio::spawn(listens_for_changes(rx_arc));
+    let handle_1 = tokio::spawn(listens_for_changes(rx_1));
+    let handle_2 = tokio::spawn(listens_for_changes(rx_2));
 
     config.update("new_db_path".to_string());
     tx.send(config).unwrap();
+
+    // closing the channel
+    drop(tx);
 
     handle_1.await.unwrap();
     handle_2.await.unwrap();
