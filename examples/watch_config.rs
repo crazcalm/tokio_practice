@@ -36,7 +36,7 @@ async fn main() {
     config.update("new_db_path".to_string());
     tx.send(config).unwrap();
 
-    // closing the channel
+    // Closing the channel
     drop(tx);
 
     handle_1.await.unwrap();

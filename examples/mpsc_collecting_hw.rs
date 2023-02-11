@@ -20,8 +20,6 @@ async fn teacher(mut rx: mpsc::Receiver<String>) -> Vec<String> {
 async fn main() {
     let (tx, rx) = mpsc::channel(100);
 
-    //let tx_arc = Arc::new(tx);
-
     let teacher_handle = tokio::spawn(teacher(rx));
 
     let mut student_handles = Vec::new();
